@@ -14,7 +14,7 @@ bool gbActiveWindow=false;
 bool gbEscapeKeyPressed = false;
 HDC ghdc;
 HGLRC ghrc;
-GLfloat cube_pyramid = 0.0f;
+GLfloat angle_cube = 0.0f;
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int nCmdShow)
 {
 	void initialize();
@@ -200,9 +200,9 @@ void display() {
 	glLoadIdentity();
 	glTranslatef(0.0f,0.0f,-6.0f);
 	
-	glRotatef(cube_pyramid, 1.0f, 0.0f, 0.0f);
-	glRotatef(cube_pyramid, 0.0f, 1.0f, 0.0f);
-	glRotatef(cube_pyramid, 0.0f, 0.0f, 1.0f);
+	glRotatef(angle_cube, 1.0f, 0.0f, 0.0f);
+	glRotatef(angle_cube, 0.0f, 1.0f, 0.0f);
+	glRotatef(angle_cube, 0.0f, 0.0f, 1.0f);
 	drawCube();
 	SwapBuffers(ghdc);
 }
@@ -301,9 +301,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	return(DefWindowProc(hwnd, iMsg, wParam, lParam));
 }
 void update() {
-	if (cube_pyramid < 360.0f) {
-		cube_pyramid = cube_pyramid + 0.05f;
+	if (angle_cube < 360.0f) {
+		angle_cube = angle_cube + 0.01f;
 	}
 	else
-		cube_pyramid = 0.0f;
+		angle_cube = 0.0f;
 }
