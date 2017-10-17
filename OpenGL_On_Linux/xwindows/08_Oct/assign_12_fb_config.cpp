@@ -272,7 +272,7 @@ void initialize(){
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-	glEnable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
 
 	glClearColor(0.0f,0.0f,0.0f,0.0f);
 	resize(giWindowWidth,giWindowHeight);
@@ -337,7 +337,6 @@ void drawRectangle(){
 	glVertex3f(1.0f, 1.0f, 1.0f); //left top
 	glVertex3f(1.0f, -1.0f, 1.0f); //left bottom
 	glVertex3f(1.0f, -1.0f, -1.0f); //right bottom
-	
 	glVertex3f(1.0f, 1.0f, -1.0f); //right top
 	
 	//back face
@@ -384,7 +383,7 @@ void display(){
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glTranslatef(1.0f,0.0f,-7.0f);
-	glRotatef(angleRect,1.0f,0.0f,0.0f);
+	glRotatef(angleRect,1.0f,1.0f,0.0f);
 	drawRectangle();
 	//fprintf(fp,"angleTri:%f angleRect:%f\n",angleTri,angleRect);
 	glXSwapBuffers(gpDisplay,gWindow);
