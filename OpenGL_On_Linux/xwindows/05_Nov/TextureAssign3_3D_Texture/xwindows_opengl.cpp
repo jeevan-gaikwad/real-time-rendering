@@ -28,15 +28,20 @@ GLXContext gGLXContext;
 
 void resize(int,int);
 void update();
-GLfloat angleSquare=360.0;
-const char *texture_smiley_path="./Smiley-512x512.bmp";
-GLuint Texture_Smiley;
-int LoadGLTextures(const char * image_path);
+GLfloat angle_pyramid = 0.0f;
+GLfloat angle_cube = 0.0f;
+const char *texture_kundali_path="./Kundali.bmp";
+const char *texture_stone_path="./Stone.bmp";
+
+GLuint Texture_Stone;
+GLuint Texture_Kundali;
+int LoadGLTextures(GLuint*, const char * image_path);
 int main(void){
 	void CreateWindow(void);
 	void ToggleFullscreen();
 	void uninitialize();
 	void initialize();
+	void update();
 	void display();
 	int winWidth=giWindowWidth;
 	int winHeight=giWindowHeight;
@@ -106,6 +111,7 @@ int main(void){
 				break;
 		}
       }
+	  	update();
 		display();	
 	}
 	fclose(fp);
@@ -196,11 +202,12 @@ void initialize(){
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
 	glEnable(GL_TEXTURE_2D);
-	LoadGLTextures(texture_smiley_path);
+	LoadGLTextures(&Texture_Kundali,texture_kundali_path);
+	LoadGLTextures(&Texture_Stone,texture_stone_path);
 	resize(giWindowWidth,giWindowHeight);
 }
 
-int LoadGLTextures(const char * image_path){
+int LoadGLTextures(GLuint *texture,const char * image_path){
 	unsigned char * image_data = NULL;
 	int width, height;
 	//GLuint texture;
@@ -211,8 +218,8 @@ int LoadGLTextures(const char * image_path){
 	}
 		
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);//rgba
-		glGenTextures(1, &Texture_Smiley);
-		glBindTexture(GL_TEXTURE_2D, Texture_Smiley);
+		glGenTextures(1, texture);
+		glBindTexture(GL_TEXTURE_2D, *texture);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 		gluBuild2DMipmaps(GL_TEXTURE_2D, 3, width, height, GL_RGB, GL_UNSIGNED_BYTE, (void*)image_data);
@@ -220,53 +227,141 @@ int LoadGLTextures(const char * image_path){
 	return 1;
 }
 
-void drawSquare(){
+void drawCube() {
+	glBindTexture(GL_TEXTURE_2D, Texture_Kundali);
 	glLineWidth(1);
-
-	glBindTexture(GL_TEXTURE_2D, Texture_Smiley);
 	glBegin(GL_QUADS);
-	glColor3f(1.0f,1.0f,-1.0f);
+	//front face
 	glTexCoord2f(0.0f, 1.0f);
-	glVertex3f(-1.0f, -1.0f, 0.0f);
-
+	glVertex3f(-1.0f, 1.0f, 1.0f); //left top
 	glTexCoord2f(0.0f, 0.0f);
-	glVertex3f(-1.0f, 1.0f, 0.0f);
-
+	glVertex3f(-1.0f, -1.0f, 1.0f); //left bottom
 	glTexCoord2f(1.0f, 0.0f);
-	glVertex3f(1.0f, 1.0f, 0.0f);
-
+	glVertex3f(1.0f, -1.0f, 1.0f); //right bottom
 	glTexCoord2f(1.0f, 1.0f);
-	glVertex3f(1.0f, -1.0f, 0.0f);
+	glVertex3f(1.0f, 1.0f, 1.0f); //right top
+
+								  //right face
+	glTexCoord2f(0.0f, 1.0f);
+	glVertex3f(1.0f, 1.0f, 1.0f); //left top
+	glTexCoord2f(0.0f, 0.0f);
+	glVertex3f(1.0f, -1.0f, 1.0f); //left bottom
+	glTexCoord2f(1.0f, 0.0f);
+	glVertex3f(1.0f, -1.0f, -1.0f); //right bottom
+	glTexCoord2f(1.0f, 1.0f);
+	glVertex3f(1.0f, 1.0f, -1.0f); //right top
+
+								   //back face
+	glTexCoord2f(0.0f, 1.0f);
+	glVertex3f(1.0f, 1.0f, -1.0f); // left top
+	glTexCoord2f(0.0f, 0.0f);
+	glVertex3f(1.0f, -1.0f, -1.0f); //left bottom
+	glTexCoord2f(1.0f, 0.0f);
+	glVertex3f(-1.0f, -1.0f, -1.0f); //right bottom
+	glTexCoord2f(1.0f, 1.0f);
+	glVertex3f(-1.0f, 1.0f, -1.0f); //right top
+
+	//left face
+	glTexCoord2f(0.0f, 1.0f);
+	glVertex3f(-1.0f, 1.0f, -1.0f); //left top
+	glTexCoord2f(0.0f, 0.0f);
+	glVertex3f(-1.0f, -1.0f, -1.0f);; //left bottom
+	glTexCoord2f(1.0f, 0.0f);
+	glVertex3f(-1.0f, -1.0f, 1.0f); //right bottom
+	glTexCoord2f(1.0f, 1.0f);
+	glVertex3f(-1.0f, 1.0f, 1.0f); //right top
+
+								   //top face
+	glTexCoord2f(0.0f, 0.0f);
+	glVertex3f(-1.0f, 1.0f, 1.0f); //left top
+	glTexCoord2f(1.0f, 0.0f);
+	glVertex3f(1.0f, 1.0f, 1.0f); //right top
+	glTexCoord2f(1.0f, 1.0f);
+	glVertex3f(1.0f, 1.0f, -1.0f);; //left bottom
+	glTexCoord2f(0.0f, 1.0f);
+	glVertex3f(-1.0f, 1.0f, -1.0f); //left bottom
+
+									//bottom face
+	glTexCoord2f(0.0f, 1.0f);
+	glVertex3f(-1.0f, -1.0f, 1.0f); //left top
+	glTexCoord2f(1.0f, 1.0f);
+	glVertex3f(1.0f, -1.0f, 1.0f); //right top
+	glTexCoord2f(1.0f, 0.0f);
+	glVertex3f(1.0f, -1.0f, -1.0f);; //right bottom
+	glTexCoord2f(0.0f, 0.0f);
+	glVertex3f(-1.0f, -1.0f, -1.0f); //left bottom
+
+
 	glEnd();
-
-
-/*
-	glBegin(GL_QUADS);
-	glColor3f(1.0f,0.0f,0.0f);
-	glVertex3f(-0.5f,-0.5f,0.0f);
-
-	glColor3f(0.0f,1.0f,0.0f);
-	glVertex3f(-0.5f,0.5f,0.0f);
-
-	glColor3f(0.0f,0.0f,1.0f);
-	glVertex3f(0.5f,0.5f,0.0f);
-
-	glColor3f(0.0f,1.0f,1.0f);
-	glVertex3f(0.5f,-0.5f,0.0f);
-
-	glEnd();
-*/
 }
 
-void display(){
-	update();
-	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+void drawPyramid() {
+	glBindTexture(GL_TEXTURE_2D, Texture_Stone);
+	glLineWidth(1);
+	glBegin(GL_TRIANGLES);
+	//front face
+	glTexCoord2f(0.5f, 1.0f);
+	glVertex3f(0.0f, 1.0f, 0.0f); //top
+
+	glTexCoord2f(0.0f, 0.0f);
+	glVertex3f(-1.0f, -1.0f, 1.0f); //left bottom
+
+	glTexCoord2f(1.0f, 0.0f);
+	glVertex3f(1.0f, -1.0f, 1.0f); //right bottom
+
+	//right face
+	glTexCoord2f(0.5f, 1.0f);
+	glVertex3f(0.0f, 1.0f, 0.0f); //top
+
+	glTexCoord2f(1.0f, 0.0f);
+	glVertex3f(1.0f, -1.0f, 1.0f);  //left bottom
+
+	glTexCoord2f(0.0f, 0.0f);
+	glVertex3f(1.0f, -1.0f, -1.0f); //right bottom
+
+	//back face
+	glTexCoord2f(0.5f, 1.0f);
+	glVertex3f(0.0f, 1.0f, 0.0f); //top
+
+	glTexCoord2f(1.0f, 1.0f);
+	glVertex3f(1.0f, -1.0f, -1.0f); //left bottom
+
+	glTexCoord2f(0.0f, 0.0f);
+	glVertex3f(-1.0f, -1.0f, -1.0f); //right bottom
+
+	//left face
+	glTexCoord2f(0.5f, 1.0f);
+	glVertex3f(0.0f, 1.0f, 0.0f); //top
+
+	glTexCoord2f(0.0f, 0.0f);
+	glVertex3f(-1.0f, -1.0f, -1.0f); //left bottom
+
+	glTexCoord2f(1.0f, 0.0f);
+	glVertex3f(-1.0f, -1.0f, 1.0f); //right bottom
+
+
+	glEnd();
+}
+
+void display() {
+	//Pyramid rotation
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	
-	glTranslatef(0.0f,0.0f,-3.0f);
-	//glRotatef(angleSquare,1.0f,0.0f,0.0f);
-	drawSquare();
+
+
+	glTranslatef(-1.5f, 0.0f, -6.0f);
+	glRotatef(angle_pyramid, 0.0f, 1.0f, 0.0f);
+	drawPyramid();
+	//Cube rotation
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	glTranslatef(1.5f, 0.0f, -6.0f);
+	glScalef(0.75f, 0.75f, 0.75f);
+	glRotatef(angle_cube, 1.0f, 0.0f, 0.0f);
+	glRotatef(angle_cube, 0.0f, 1.0f, 0.0f);
+	//glRotatef(angle_cube, 0.0f, 0.0f, 1.0f);
+	drawCube();
 	glXSwapBuffers(gpDisplay,gWindow);
 }
 
@@ -338,15 +433,20 @@ void uninitialize(){
 	}
 }
 
-void update(){
-		if(angleSquare > 0.0 ){
-		angleSquare-=0.1f;
-	}else
-		angleSquare=360.0;
 
+void update() {
+	if (angle_pyramid < 360.0f) {
+		angle_pyramid = angle_pyramid + 0.1f;
+	}
+	else {
+		angle_pyramid = 0.0f;
+	}
+	if (angle_cube < 360.f) {
+		angle_cube = angle_cube + 0.01f;
+	}
+	else
+		angle_cube = 0.0f;
 }
-
-
 
 
 
