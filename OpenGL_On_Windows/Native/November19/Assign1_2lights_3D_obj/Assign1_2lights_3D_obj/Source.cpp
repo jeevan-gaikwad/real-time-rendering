@@ -191,14 +191,14 @@ void drawCube() {
 	glBegin(GL_QUADS);
 	//front face
 	glNormal3f(0.0f, 0.0, 1.0f);
-	glColor3f(1.0f, 0.0f, 0.0f); //red
+	//glColor3f(1.0f, 0.0f, 0.0f); //red
 	glVertex3f(-1.0f, 1.0f, 1.0f); //left top
 	glVertex3f(-1.0f, -1.0f, 1.0f); //left bottom
 	glVertex3f(1.0f, -1.0f, 1.0f); //right bottom
 	glVertex3f(1.0f, 1.0f, 1.0f); //right top
 
 	glNormal3f(1.0f, 0.0, 0.0f);		  //right face
-	glColor3f(0.0f, 1.0f, 0.0f); //green
+	//glColor3f(0.0f, 1.0f, 0.0f); //green
 	glVertex3f(1.0f, 1.0f, 1.0f); //left top
 	glVertex3f(1.0f, -1.0f, 1.0f); //left bottom
 	glVertex3f(1.0f, -1.0f, -1.0f); //right bottom
@@ -206,28 +206,28 @@ void drawCube() {
 	glVertex3f(1.0f, 1.0f, -1.0f); //right top
 
 	glNormal3f(0.0f, 0.0, -1.0f);			   //back face
-	glColor3f(0.0f, 0.0f, 1.0f); //blue
+	//glColor3f(0.0f, 0.0f, 1.0f); //blue
 	glVertex3f(1.0f, 1.0f, -1.0f); // left top
 	glVertex3f(1.0f, -1.0f, -1.0f); //left bottom
 	glVertex3f(-1.0f, -1.0f, -1.0f); //right bottom
 	glVertex3f(-1.0f, 1.0f, -1.0f); //right top
 
 	glNormal3f(-1.0f, 0.0, 0.0f);					//left face
-	glColor3ub(100, 149, 237); //corn flower
+	//glColor3ub(100, 149, 237); //corn flower
 	glVertex3f(-1.0f, 1.0f, -1.0f); //left top
 	glVertex3f(-1.0f, -1.0f, -1.0f);; //left bottom
 	glVertex3f(-1.0f, -1.0f, 1.0f); //left bottom
 	glVertex3f(-1.0f, 1.0f, 1.0f); //left top
 
 	glNormal3f(0.0f, 1.0, 0.0f);				   //top face
-	glColor3ub(255, 0, 255); //corn flower
+	//glColor3ub(255, 0, 255); //corn flower
 	glVertex3f(-1.0f, 1.0f, 1.0f); //left top
 	glVertex3f(1.0f, 1.0f, 1.0f); //left top
 	glVertex3f(1.0f, 1.0f, -1.0f);; //left bottom
 	glVertex3f(-1.0f, 1.0f, -1.0f); //left bottom
 
 	glNormal3f(0.0f, -1.0, 0.0f);					//bottom face
-	glColor3ub(255, 128, 0); //corn flower
+	//glColor3ub(255, 128, 0); //corn flower
 	glVertex3f(-1.0f, -1.0f, 1.0f); //left top
 	glVertex3f(1.0f, -1.0f, 1.0f); //left top
 	glVertex3f(1.0f, -1.0f, -1.0f);; //left bottom
@@ -242,44 +242,44 @@ void drawPyramid() {
 	glBegin(GL_TRIANGLES);
 	//front face
 	glNormal3f(0.0f, 0.447214f, 0.894427f);
-	glColor3f(1.0f, 0.0f, 0.0f); //red
+	//glColor3f(1.0f, 0.0f, 0.0f); //red
 	glVertex3f(0.0f, 1.0f, 0.0f); //top
 
-	glColor3f(0.0f, 1.0f, 0.0f); //green
+	//glColor3f(0.0f, 1.0f, 0.0f); //green
 	glVertex3f(-1.0f, -1.0f, 1.0f); //left bottom
 
-	glColor3f(0.0f, 0.0f, 1.0f); //blue
+	//glColor3f(0.0f, 0.0f, 1.0f); //blue
 	glVertex3f(1.0f, -1.0f, 1.0f); //right bottom
 
 	glNormal3f(0.894427f, 0.447214f, 0.0f);			   //right face
-	glColor3f(1.0f, 0.0f, 0.0f); //red
+	//glColor3f(1.0f, 0.0f, 0.0f); //red
 	glVertex3f(0.0f, 1.0f, 0.0f); //top
 
-	glColor3f(0.0f, 0.0f, 1.0f); //blue
+	//glColor3f(0.0f, 0.0f, 1.0f); //blue
 	glVertex3f(1.0f, -1.0f, 1.0f);  //left bottom
 
-	glColor3f(0.0f, 1.0f, 0.0f); //green
+	//glColor3f(0.0f, 1.0f, 0.0f); //green
 	glVertex3f(1.0f, -1.0f, -1.0f); //right bottom
 
 	glNormal3f(0.0f, 0.447214f, -0.894427f);		//back face
-	glColor3f(1.0f, 0.0f, 0.0f); //red
+	//glColor3f(1.0f, 0.0f, 0.0f); //red
 	glVertex3f(0.0f, 1.0f, 0.0f); //top
 
-	glColor3f(0.0f, 1.0f, 0.0f); //green
+	//glColor3f(0.0f, 1.0f, 0.0f); //green
 	glVertex3f(1.0f, -1.0f, -1.0f); //left bottom
 
-	glColor3f(0.0f, 0.0f, 1.0f); //blue
+	//glColor3f(0.0f, 0.0f, 1.0f); //blue
 	glVertex3f(-1.0f, -1.0f, -1.0f); //right bottom
 
 	glNormal3f(-0.894427f, 0.447214f, 0.0f);     //left face
-	glColor3f(1.0f, 0.0f, 0.0f); //red
+	//glColor3f(1.0f, 0.0f, 0.0f); //red
 	glVertex3f(0.0f, 1.0f, 0.0f); //top
 
-	glColor3f(0.0f, 0.0f, 1.0f); //blue
+	//glColor3f(0.0f, 0.0f, 1.0f); //blue
 
 	glVertex3f(-1.0f, -1.0f, -1.0f); //left bottom
 
-	glColor3f(0.0f, 1.0f, 0.0f); //green
+	//glColor3f(0.0f, 1.0f, 0.0f); //green
 	glVertex3f(-1.0f, -1.0f, 1.0f); //right bottom
 
 
@@ -289,7 +289,7 @@ void drawSphere() {
 	GLUquadric *quadric = NULL;
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	quadric = gluNewQuadric();
-	gluSphere(quadric, 1.25f, 30, 30);
+	gluSphere(quadric, 1.25f, 100, 100);
 	gluDeleteQuadric(quadric);
 }
 void display() {
@@ -298,7 +298,7 @@ void display() {
 		//Pyramid rotation
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
-		glTranslatef(-3.0f, 0.0f, -6.5f);
+		glTranslatef(0.0f, 0.0f, -5.0f);
 		glRotatef(angle_pyramid, 0.0f, 1.0f, 0.0f);
 		drawPyramid();
 	}
@@ -306,7 +306,7 @@ void display() {
 		//Cube rotation
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
-		glTranslatef(0.f, 0.0f, -6.5f);
+		glTranslatef(0.0f, 0.0f, -5.5f);
 		//glScalef(0.75f, 0.75f, 0.75f);
 		glRotatef(angle_cube, 0.0f, 1.0f, 0.0f);
 		drawCube();
@@ -314,7 +314,7 @@ void display() {
 	else if (isSphereOn == GL_TRUE) {
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
-		glTranslatef(3.0f, 0.0f, -6.5f);
+		glTranslatef(0.0f, 0.0f, -6.5f);
 		glRotatef(angle_sphere, 0.0f, 1.0f, 0.0f);
 		drawSphere();
 	}
@@ -459,19 +459,19 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT iMsg, WPARAM wParam, LPARAM lParam)
 }
 void update() {
 	if (angle_pyramid < 360.0f) {
-		angle_pyramid = angle_pyramid + 0.1f;
+		angle_pyramid = angle_pyramid + 0.01f;
 	}
 	else {
 		angle_pyramid = 0.0f;
 	}
 	if (angle_cube < 360.f) {
-		angle_cube = angle_cube + 0.1f;
+		angle_cube = angle_cube + 0.01f;
 	}
 	else
 		angle_cube = 0.0f;
 
 	if (angle_sphere < 360.f) {
-		angle_sphere = angle_sphere + 0.1f;
+		angle_sphere = angle_sphere + 0.01f;
 	}
 	else
 		angle_sphere = 0.0f;
