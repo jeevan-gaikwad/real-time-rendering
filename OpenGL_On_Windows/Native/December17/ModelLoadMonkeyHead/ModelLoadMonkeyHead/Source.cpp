@@ -270,8 +270,8 @@ void LoadMeshData(void) {
 			std::vector<float> vec_point_coord(NR_POINT_COORDS);
 			for (int i = 0;i != NR_POINT_COORDS;i++) {
 				vec_point_coord[i] = atof(strtok(NULL, sep_space));
-				g_vertices.push_back(vec_point_coord);
 			}
+			g_vertices.push_back(vec_point_coord);
 		}
 		else if (strcmp(first_token, "vt") == S_EQUAL) { //texture coordinates
 			std::vector<float> vec_texture_coord(NR_TEXTURE_COORDS);
@@ -284,8 +284,8 @@ void LoadMeshData(void) {
 			std::vector<float> vec_normal_coord(NR_NORMAL_COORDS);
 			for (int i = 0;i != NR_NORMAL_COORDS;i++) {
 				vec_normal_coord[i] = atof(strtok(NULL, sep_space));
-				g_normals.push_back(vec_normal_coord);
 			}
+			g_normals.push_back(vec_normal_coord);
 		}
 		else if (strcmp(first_token, "f") == S_EQUAL) {  //face data 
 			std::vector<int> triangle_vertex_indices(3), texture_vertex_indices(3), normal_vertex_indices(3);
@@ -315,10 +315,11 @@ void LoadMeshData(void) {
 		}
 		memset((void*)line, (int)'\0', BUFFER_SIZE);
 	}
+
+	fprintf(g_fp_logfile, "g_vertices:%llu g_texture:%llu g_normals:llu g_face_tri:%llu",
+		g_vertices.size(), g_texture.size(), g_normals.size(), g_face_tri.size());
 	fclose(g_fp_meshfile);
 	g_fp_meshfile = NULL;
-
-
 }
 
 void display() {
@@ -330,7 +331,7 @@ void display() {
 	glRotatef(g_rotate, 0.0f, 1.0f, 0.0f);
 	glScalef(MONKEYHEAD_X_SCALE_FACTOR, MONKEYHEAD_Y_SCALE_FACTOR, MONKEYHEAD_Z_SCALE_FACTOR);
 	glFrontFace(GL_CCW);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	for (int i = 0;i != g_face_tri.size();i++) {
 		glBegin(GL_TRIANGLES);
 		for (int j = 0;j != g_face_tri[i].size();j++) {
