@@ -59,6 +59,8 @@ int main(void) {
 				printf("Create queue first.\n");
 			break;
 		case 6: //exit
+			if(queue !=NULL)
+				destroyQueue(queue);
 			break;
 		default:
 			printf("Wrong choice. Try again.\n");

@@ -4,7 +4,9 @@ Queue* createQueue() {
 	Queue* queue =(Queue*) createList();
 	return queue;
 }
-RESULT destroyQueue(Queue*);
+RESULT destroyQueue(Queue* queue) {
+	return destroyList(queue);
+}
 RESULT enqueue(Queue* queue, DATA data) {	
 	return addNode(queue, data);
 }
@@ -48,3 +50,4 @@ RESULT queueDump(Queue* queue) {
 	printf("Q data : ");
 	return displayList(queue);
 }
+
