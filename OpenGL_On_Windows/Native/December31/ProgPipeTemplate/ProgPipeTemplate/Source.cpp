@@ -104,7 +104,7 @@ void initialize() {
 	pfd.cRedBits = 8;
 	pfd.cGreenBits = 8;
 	pfd.cBlueBits = 8;
-	pfd.cAlphaBits = 8;
+	pfd.cAlphaBits = 32;
 	pfd.cDepthBits = 32;
 	ghdc = GetDC(ghwnd);
 	iPixelFormatIndex = ChoosePixelFormat(ghdc, &pfd);
