@@ -48,7 +48,16 @@ Mat4 Mat4::operator-(Mat4 matrix) {
 
 Mat4 Mat4::operator*(Mat4 matrix) {
 	Mat4 result;
-	//TODO: implement column by row mat mul
+	
+	for (int i = 0;i < MAT4_DIMENSIONS;i++) {
+		for (int k = 0;k < MAT4_DIMENSIONS;k++) {
+			float sum = 0.0f;
+			for (int j = 0;j < MAT4_DIMENSIONS;j++) {
+				sum = sum + elements[i][j] * matrix.elements[j][k];
+			}
+			result.elements[i][k] = sum;
+		}
+	}
 	return result;
 }
 

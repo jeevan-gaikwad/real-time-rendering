@@ -24,7 +24,7 @@ int main(void) {
 	Mat4 mat2(data2);
 	Mat4 result_sum;
 	Mat4 result_subtraction;
-
+	Mat4 result_mutliplication;
 	int choice = 0;
 	while (choice != 5) {
 		display_menu();
@@ -47,6 +47,12 @@ int main(void) {
 			std::cout << "Subtraction of mat1 and mat2:" << std::endl;
 			result_subtraction.displayMat();
 			break;
+		case 4:
+			result_mutliplication = mat1 * mat2;
+			std::cout << "Multiplication of mat1 and mat2:" << std::endl;
+			result_mutliplication.displayMat();
+			break;
+
 		default: std::cout << "Wrong choice entered.Try again." << std::endl;
 			break;
 		}
