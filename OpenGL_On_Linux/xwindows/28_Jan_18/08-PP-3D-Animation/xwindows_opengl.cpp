@@ -27,6 +27,10 @@ int giWindowHeight=600;
 GLXContext gGLXContext;
 ofstream g_log_file;
 
+typedef GLXContext (*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
+glXCreateContextAttribsARBProc glXCreateContextAttribsARB=NULL;
+GLXFBConfig gGLXFBConfig;
+
 enum{
 	JCG_ATTRIBUTE_VERTEX = 0,
 	JCG_ATTRIBUTE_COLOR,
@@ -139,7 +143,7 @@ int main(void){
 	}
 	return(0);
 }
-
+/*
 void CreateWindow(){
 	void uninitialize();
 	//variable declarations
@@ -212,11 +216,173 @@ void CreateWindow(){
 
 	XMapWindow(gpDisplay,gWindow);
 }
-void initialize(){
-	
+*/
+void CreateWindow(){
 	void uninitialize();
+	//variable declarations
+	XSetWindowAttributes winAttribs;
+	
+	GLXFBConfig *pGLXFBConfigs=NULL;
+	GLXFBConfig bestGLXFBConfig;
+	XVisualInfo *pTempXVisualInfo=NULL;
+
+	int styleMask;
+	int iNumFBConfigs = 0;
+	int i;
+
+	static int frameBufferAttributes[]={
+		GLX_X_RENDERABLE, True,
+		GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
+		GLX_RENDER_TYPE, GLX_RGBA_BIT,
+		GLX_X_VISUAL_TYPE, GLX_TRUE_COLOR,
+		GLX_STENCIL_SIZE, 8,
+		GLX_DEPTH_SIZE, 24,
+		GLX_RED_SIZE, 8,
+		GLX_GREEN_SIZE, 8,
+		GLX_BLUE_SIZE, 8,
+		GLX_DOUBLEBUFFER, True,
+		GLX_ALPHA_SIZE, 8,
+		None
+		//,GLX_SAMPLE_BUFFERS,1,     //Enable these two for programmable pipeline
+		//GLX_SAMPLES, 4
+	};
+
+	gpDisplay=XOpenDisplay(NULL);
+
+	if(gpDisplay==NULL){
+		
+		printf("Error: Unable to Open X Display.\n Exiting now....\n");
+		uninitialize();
+		exit(1);
+
+	}
+	
+	pGLXFBConfigs=glXChooseFBConfig(gpDisplay, DefaultScreen(gpDisplay),frameBufferAttributes, &iNumFBConfigs);
+	if(pGLXFBConfigs == NULL){
+		printf("Failed to get valid framebuffer config. Exiting now..\n");
+		uninitialize();
+		exit(1);
+	}
+	
+	printf("%d matching FB configs found.\n",iNumFBConfigs);
+
+	//Pick that FB config which has more samples per pixel
+	int bestFramebufferconfig = -1, worstFramebufferConfig = -1, bestNumberOfSamples = -1, worstNumberOfSamples = 999;
+
+	for(i=0; i< iNumFBConfigs; i++){
+		pTempXVisualInfo=glXGetVisualFromFBConfig(gpDisplay, pGLXFBConfigs[i]);
+		if(pTempXVisualInfo){
+			int sampleBuffer, samples;
+
+			glXGetFBConfigAttrib(gpDisplay, pGLXFBConfigs[i], GLX_SAMPLE_BUFFERS, &sampleBuffer);
+			glXGetFBConfigAttrib(gpDisplay, pGLXFBConfigs[i], GLX_SAMPLES, &samples);
+
+			printf("Matching framebuffer config=%d : Visual ID=0x%lu : SAMPLE_BUFFERS=%d :SAMPLES=%d\n",i,pTempXVisualInfo->visualid,sampleBuffer,samples);
+
+			if(bestFramebufferconfig < 0 || sampleBuffer && samples >bestNumberOfSamples ){
+				bestFramebufferconfig = i;
+				bestNumberOfSamples = samples;
+			}
+			if(worstNumberOfSamples < 0 || !sampleBuffer || samples < worstNumberOfSamples){
+				worstFramebufferConfig = i;
+				worstNumberOfSamples = samples;
+			}
+
+			XFree(pTempXVisualInfo);
+		}
+
+	}//for loop ends
+
+	bestGLXFBConfig = pGLXFBConfigs[bestFramebufferconfig];
+	gGLXFBConfig = bestGLXFBConfig;
+	
+	XFree(pGLXFBConfigs);
+
+	gpXVisualInfo = glXGetVisualFromFBConfig(gpDisplay, bestGLXFBConfig);
+	
+	printf("Choose visual ID=0x%lu\n", gpXVisualInfo->visualid);
+	
+
+	winAttribs.border_pixel=0;
+	winAttribs.background_pixmap=0;
+	winAttribs.colormap=XCreateColormap(gpDisplay,
+									RootWindow(gpDisplay,gpXVisualInfo->screen),
+									gpXVisualInfo->visual,
+									AllocNone);
+	gColormap=winAttribs.colormap;
+
+	//winAttribs.background_pixel=BlackPixel(gpDisplay,defaultScreen);
+
+	winAttribs.event_mask=ExposureMask|VisibilityChangeMask|ButtonPressMask|KeyPressMask|PointerMotionMask|StructureNotifyMask|ButtonPressMask;
+
+	styleMask=CWBorderPixel|CWBackPixel|CWEventMask|CWColormap;
+
+	gWindow=XCreateWindow(gpDisplay,
+					RootWindow(gpDisplay, gpXVisualInfo->screen),
+					0,
+					0,
+					giWindowWidth,
+					giWindowHeight,
+					0,
+					gpXVisualInfo->depth,
+					InputOutput,
+					gpXVisualInfo->visual,
+					styleMask,
+					&winAttribs);
+
+		if(!gWindow){
+			printf("Error: Failed to Create Main Window.\n Exiting now..\n");
+			uninitialize();
+			exit(1);
+		}
+	XStoreName(gpDisplay,gWindow,"FBConfig Window");
+	Atom windowManagerDelete=XInternAtom(gpDisplay,"WM_DELETE_WINDOW",True);
+	XSetWMProtocols(gpDisplay,gWindow,&windowManagerDelete,1);
+
+	XMapWindow(gpDisplay,gWindow);
+}
+
+void initialize(){
+	void uninitialize();
+
+/*	
 	gGLXContext=glXCreateContext(gpDisplay,gpXVisualInfo,NULL,GL_TRUE);
 	glXMakeCurrent(gpDisplay,gWindow,gGLXContext);
+*/
+	//create new GL context 4.5 for rendering
+	glXCreateContextAttribsARB = (glXCreateContextAttribsARBProc)glXGetProcAddressARB((GLubyte*)"glXCreateContextAttribsARB");
+	
+	GLint attribs[] = {
+		GLX_CONTEXT_MAJOR_VERSION_ARB,4,
+		GLX_CONTEXT_MINOR_VERSION_ARB,5,
+		GLX_CONTEXT_PROFILE_MASK_ARB,
+		GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB, 
+		//GLX_CONTEXT_CORE_PROFILE_BIT_ARB, 
+		0//end of array
+	};
+
+	gGLXContext=glXCreateContextAttribsARB(gpDisplay,gGLXFBConfig,0, True , attribs);
+	if(!gGLXContext){
+		GLint attribs[]={
+			GLX_CONTEXT_MAJOR_VERSION_ARB,1,
+			GLX_CONTEXT_MINOR_VERSION_ARB,0,
+			0
+		};
+		printf("Failed to create GLX 4.5 context. Hence using old style GLX context\n");
+		gGLXContext=glXCreateContextAttribsARB(gpDisplay,gGLXFBConfig,0, True , attribs);
+	}else{
+		printf("Successfully create OpenGL context 4.5\n");
+	}
+
+	//verify that above created context is direct context
+
+	if(!glXIsDirect(gpDisplay, gGLXContext)){
+		printf("Indirect GLX rendering context obtained\n");
+	}else{
+		printf("Direct GLX rendering context obtained\n");
+	}
+	glXMakeCurrent(gpDisplay, gWindow, gGLXContext);
+
 
 	GLenum glew_error = glewInit();	//Turn ON all graphic card extension
 
