@@ -6,7 +6,7 @@
 #include <gl\glew.h>
 #include<gl\GL.h>
 #include"vmath.h"
-
+#include<vector>
 
 #pragma comment(lib,"glew32.lib")
 #pragma comment(lib,"user32.lib")
@@ -25,7 +25,12 @@ HGLRC ghrc;
 bool gbActiveWindow = false;
 bool gbEscapeKeyPressed = false;
 std::ofstream g_log_file;
-
+//GLfloat *gQuad1Vertices=NULL;
+//GLfloat *gTiltedQuadVertices=NULL;
+typedef struct quad {
+	GLfloat *position;
+	GLint size;
+}quad_t;
 enum {
 	JCG_ATTRIBUTE_VERTEX = 0,
 	JCG_ATTRIBUTE_COLOR,
@@ -37,19 +42,17 @@ GLuint gVertexShaderObject;
 GLuint gFragmentShaderObject;
 GLuint gShaderProgramObject;
 
-GLuint gVao_quad1;
-GLuint gVbo_position_qaud1;
+GLuint gVao_quad;
+GLuint gVbo_position_qaud;
 GLuint gVbo_texture_qaud;
-GLuint gVao_quad_tilted;
-GLuint gVbo_position_tilted_quad;
 GLuint gMVPUniform;
 
 mat4 gPerspectiveProjectionMatrix;
 
-
 GLuint gTexture_sampler_uniform; //for uniform(dynamic) texture data
 GLubyte checkImage[checkImageHeight][checkImageWidth][4];
 GLuint checkerBoardTexture;
+
 void MakeCheckImage();
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpszCmdLine, int nCmdShow)
 {
@@ -302,27 +305,21 @@ void initialize() {
 	gTexture_sampler_uniform = glGetUniformLocation(gShaderProgramObject, "u_texture0_sampler");
 	
 	// Vertices, colors, shader attribs, vbo, vao initializations
-	//quad1
-	const GLfloat quad1Vertices[] = {
-		-2.0f, 1.0f, 0.0f,
-		-2.0f, -1.0f, 0.0f,
-		0.0f, -1.0f, 0.0f,
-		0.0f, 1.0f, 0.0f
-	};
-	const GLfloat quadTexcoords[] = {
+	
+	GLfloat quadTexcoords[] = {
 		0.0f, 0.0f,
 		0.0f, 1.0f,
 		1.0f, 1.0f,
 		1.0f, 0.0f
 	};
-
+	
 	//create a vao for quad1
-	glGenVertexArrays(1, &gVao_quad1);
-	glBindVertexArray(gVao_quad1);
+	glGenVertexArrays(1, &gVao_quad);
+	glBindVertexArray(gVao_quad);
 	//set quad1 position
-	glGenBuffers(1, &gVbo_position_qaud1);
-	glBindBuffer(GL_ARRAY_BUFFER, gVbo_position_qaud1);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(quad1Vertices), quad1Vertices, GL_STATIC_DRAW);
+	glGenBuffers(1, &gVbo_position_qaud);
+	glBindBuffer(GL_ARRAY_BUFFER, gVbo_position_qaud);
+	glBufferData(GL_ARRAY_BUFFER, 48, NULL, GL_DYNAMIC_DRAW); //we will provide data at runtime DYNAMIC_DRAW
 
 	glVertexAttribPointer(JCG_ATTRIBUTE_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 	glEnableVertexAttribArray(JCG_ATTRIBUTE_VERTEX);
@@ -330,41 +327,14 @@ void initialize() {
 	
 	glGenBuffers(1, &gVbo_texture_qaud);
 	glBindBuffer(GL_ARRAY_BUFFER, gVbo_texture_qaud);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(quadTexcoords), quadTexcoords, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quadTexcoords), quadTexcoords, GL_STATIC_DRAW); //providing texture data statically
 
 	glVertexAttribPointer(JCG_ATTRIBUTE_TEXTURE0, 2, GL_FLOAT, GL_FALSE, 0, NULL); //note 2. We've s and t for texture coords
 	glEnableVertexAttribArray(JCG_ATTRIBUTE_TEXTURE0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glBindVertexArray(0);  //done with quad1 vao
-	//titled quad
-	//quad1
-	const GLfloat tiltedQuadVertices[] = {
-		2.41421f, -1.0f, -1.41421f,
-		2.41421f, 1.0f, -1.41421f,
-		1.0f,     1.0f,  0.0f,
-		1.0f, -1.0f, 0.0f
-	};
 	
-	//create a vao for triangle
-	glGenVertexArrays(1, &gVao_quad_tilted);
-	glBindVertexArray(gVao_quad_tilted);
-	//set triangle position
-	glGenBuffers(1, &gVbo_position_tilted_quad);
-	glBindBuffer(GL_ARRAY_BUFFER, gVbo_position_tilted_quad);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(tiltedQuadVertices), tiltedQuadVertices, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(JCG_ATTRIBUTE_VERTEX, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-	glEnableVertexAttribArray(JCG_ATTRIBUTE_VERTEX);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	glGenBuffers(1, &gVbo_texture_qaud);
-	glBindBuffer(GL_ARRAY_BUFFER, gVbo_texture_qaud);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(quadTexcoords), quadTexcoords, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(JCG_ATTRIBUTE_TEXTURE0, 2, GL_FLOAT, GL_FALSE, 0, NULL); //note 2. We've s and t for texture coords
-	glEnableVertexAttribArray(JCG_ATTRIBUTE_TEXTURE0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glBindVertexArray(0);  //done with pyramid vao
 
@@ -396,13 +366,24 @@ void resize(int width, int height) {
 		height = 1;
 	glViewport(0, 0, (GLsizei)width, (GLsizei)height);
 	
-	gPerspectiveProjectionMatrix = vmath::perspective(45.0f, ((GLfloat)width / (GLfloat)height),0.1f,100.0f);
+	gPerspectiveProjectionMatrix = vmath::perspective(60.0f, ((GLfloat)width / (GLfloat)height),0.1f,30.0f);
 
 }
 
 void display() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
+	const GLfloat quad1Vertices[] = {
+		-2.0f, 1.0f, 0.0f,
+		-2.0f, -1.0f, 0.0f,
+		0.0f, -1.0f, 0.0f,
+		0.0f, 1.0f, 0.0f
+	};
+	const GLfloat tiltedQuadVertices[] = {
+		2.41421f, -1.0f, -1.41421f,
+		2.41421f, 1.0f, -1.41421f,
+		1.0f,     1.0f,  0.0f,
+		1.0f, -1.0f, 0.0f
+	};
 	//Start using shader program object
 	glUseProgram(gShaderProgramObject); //run shaders
 
@@ -415,8 +396,7 @@ void display() {
 	mat4 translationMatrix = mat4::identity();
 	mat4 rotationMatrix = mat4::identity();
 
-	//modelViewMatrix = vmath::translate(0.0f, 0.0f, -4.0f);
-	translationMatrix = vmath::translate(0.0f, 0.0f, -6.0f);
+	translationMatrix = vmath::translate(0.0f, 0.0f, -3.6f);
 	modelViewMatrix = modelViewMatrix * translationMatrix;
 	modelViewProjectionMatrix = gPerspectiveProjectionMatrix * modelViewMatrix; //ORDER IS IMP
 
@@ -424,35 +404,28 @@ void display() {
 
 	glUniformMatrix4fv(gMVPUniform, 1, GL_FALSE, modelViewProjectionMatrix);
 	//bind quad1 vao
-	glBindVertexArray(gVao_quad1);
-	
+	glBindVertexArray(gVao_quad);
 	//bind with pyramid texture
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, checkerBoardTexture);
 	glUniform1i(gTexture_sampler_uniform, 0);
+	glBindBuffer(GL_ARRAY_BUFFER,gVbo_position_qaud);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quad1Vertices), quad1Vertices, GL_DYNAMIC_DRAW); //we will provide data at runtime DYNAMIC_DRAW
 	// Draw either by glDrawTriangles() or glDrawArrays() or glDrawElements()
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4); //4 is no of positions
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	glBindVertexArray(0);
-
-	//tilted quad
-	//reset and place Model view matrix
+	//Draw tilted quad
 	modelViewMatrix = mat4::identity();
 	modelViewProjectionMatrix = mat4::identity();
-	//modelViewMatrix = vmath::translate(0.0f, 0.0f, -4.0f);
-	translationMatrix = vmath::translate(0.0f, 0.0f, -6.0f);
+	translationMatrix = vmath::translate(0.0f, 0.0f, -3.6f);
 	modelViewMatrix = modelViewMatrix * translationMatrix;
 	modelViewProjectionMatrix = gPerspectiveProjectionMatrix * modelViewMatrix; //ORDER IS IMP
 	glUniformMatrix4fv(gMVPUniform, 1, GL_FALSE, modelViewProjectionMatrix);
-
-	//bind tilted quad vao
-	glBindVertexArray(gVao_quad_tilted);
-
-	//bind with pyramid texture
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, checkerBoardTexture);
-	glUniform1i(gTexture_sampler_uniform, 0);
-	// Draw either by glDrawTriangles() or glDrawArrays() or glDrawElements()
+	
+	glBindVertexArray(gVao_quad);
+	glBindBuffer(GL_ARRAY_BUFFER,gVbo_position_qaud);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(tiltedQuadVertices), tiltedQuadVertices, GL_DYNAMIC_DRAW); //we will provide data at runtime DYNAMIC_DRAW
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4); //4 is no of positions
 
 	glBindVertexArray(0);
@@ -587,27 +560,18 @@ void uninitialize(void)
 
 	}
 	
-	if (gVao_quad1) {
-		glDeleteVertexArrays(1, &gVao_quad1);
-		gVao_quad1 = 0;
+	if (gVao_quad) {
+		glDeleteVertexArrays(1, &gVao_quad);
+		gVao_quad = 0;
 	}
 
-	if (gVao_quad_tilted) {
-		glDeleteVertexArrays(1, &gVao_quad_tilted);
-		gVao_quad_tilted = 0;
-	}
-
-	if (gVbo_position_qaud1) {
-		glDeleteBuffers(1, &gVbo_position_qaud1);
-		gVbo_position_qaud1 = 0;
+	if (gVbo_position_qaud) {
+		glDeleteBuffers(1, &gVbo_position_qaud);
+		gVbo_position_qaud = 0;
 	}
 	if (gVbo_texture_qaud) {
 		glDeleteBuffers(1, &gVbo_texture_qaud);
 		gVbo_texture_qaud = 0;
-	}
-	if (gVbo_position_tilted_quad) {
-		glDeleteBuffers(1, &gVbo_position_tilted_quad);
-		gVbo_position_tilted_quad = 0;
 	}
 	
 	//unload textures
