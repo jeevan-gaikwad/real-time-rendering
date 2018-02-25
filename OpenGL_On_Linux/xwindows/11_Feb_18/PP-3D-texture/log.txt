@@ -1,0 +1,9 @@
+Log file successfully created
+Entry:main
+Entry:initialize
+createing context attrib
+ context attrib created
+glew init doneVertex shader compilation doneFragment shader compilation doneShader program linking done
+Done with vaos and vbos
+Exit:initialize
+Exit:main
