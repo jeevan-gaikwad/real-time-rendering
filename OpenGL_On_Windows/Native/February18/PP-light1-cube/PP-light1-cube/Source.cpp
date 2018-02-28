@@ -40,7 +40,7 @@ GLuint gVao_cube;
 GLuint gVbo_normal_cube;
 GLuint gVbo_position_cube;
 GLuint gMVPUniform;
-GLuint gModelViewMatrixUniform, gProjectionMatrixUniform;
+GLuint gModelMatrixUniform, gViewMatrixUniform, gProjectionMatrixUniform;
 GLuint gLdUniform, gKdUniform, gLightPositionUniform;
 GLuint gLKeyPressedUniform;
 GLfloat gAngle = 0.0f;
@@ -139,7 +139,8 @@ void initialize_shaders() {
 		"\n" \
 		"in vec4 vPosition;" \
 		"in vec3 vNormal;" \
-		"uniform mat4 u_model_view_matrix;" \
+		"uniform mat4 u_model_matrix;" \
+		"uniform mat4 u_view_matrix;" \
 		"uniform mat4 u_projection_matrix;" \
 		"uniform int u_LKeyPressed;"\
 		"uniform vec3 u_Ld;" \
@@ -150,12 +151,12 @@ void initialize_shaders() {
 		"{" \
 		"if(u_LKeyPressed == 1)" \
 		"{"\
-		"vec4 eyeCoordinates = u_model_view_matrix * vPosition;" \
-		"vec3 tnorm = normalize(mat3(u_model_view_matrix) * vNormal);" \
+		"vec4 eyeCoordinates = u_view_matrix * u_model_matrix * vPosition;" \
+		"vec3 tnorm = normalize(mat3(u_view_matrix * u_model_matrix) * vNormal);" \
 		"vec3 s = normalize(vec3(u_light_position - eyeCoordinates));" \
 		"diffuse_light = u_Ld * u_Kd * max(dot(s,tnorm),0.0);" \
 		"}" \
-		"gl_Position = u_projection_matrix * u_model_view_matrix * vPosition;" \
+		"gl_Position = u_projection_matrix * u_view_matrix * u_model_matrix * vPosition;" \
 		"}";
 
 	glShaderSource(gVertexShaderObject, 1, (const GLchar**)&vertexShaderSourceCode, NULL); //NULL is for NULL terminated source code string
@@ -191,8 +192,8 @@ void initialize_shaders() {
 		"#version 440 core" \
 		"\n" \
 		"in vec3 diffuse_light;"
-		"uniform int u_LKeyPressed;"
 		"out vec4 FragColor;" \
+		"uniform int u_LKeyPressed;"
 		"void main(void)" \
 		"{" \
 		"vec4 color;" \
@@ -319,7 +320,8 @@ void initialize() {
 		}
 	}
 	//Preparation to put our dynamic(uniform) data into the shader
-	gModelViewMatrixUniform = glGetUniformLocation(gShaderProgramObject, "u_model_view_matrix");
+	gModelMatrixUniform = glGetUniformLocation(gShaderProgramObject, "u_model_matrix");
+	gViewMatrixUniform = glGetUniformLocation(gShaderProgramObject, "u_view_matrix");
 	gProjectionMatrixUniform = glGetUniformLocation(gShaderProgramObject, "u_projection_matrix");
 	gLKeyPressedUniform = glGetUniformLocation(gShaderProgramObject, "u_LKeyPressed");
 	gLdUniform = glGetUniformLocation(gShaderProgramObject, "u_Ld");
@@ -329,6 +331,7 @@ void initialize() {
 
 	
 						   //cube
+
 	const GLfloat cubeVertices[] = {
 		//front face
 		-1.0f, 1.0f, 1.0f, //left top
@@ -368,21 +371,15 @@ void initialize() {
 	//cube colors
 	const GLfloat cubeNormals[] = {
 
-		0.0f,1.0f,0.0f,
-		0.0f,1.0f,0.0f,
-		0.0f,1.0f,0.0f,
-		0.0f,1.0f,0.0f,
-
-		0.0f,-1.0f,0.0f,
-		0.0f,-1.0f,0.0f,
-		0.0f,-1.0f,0.0f,
-		0.0f,-1.0f,0.0f,
-
-
 		0.0f,0.0f,1.0f,
 		0.0f,0.0f,1.0f,
 		0.0f,0.0f,1.0f,
 		0.0f,0.0f,1.0f,
+		
+		1.0f,0.0f,0.0f,
+		1.0f,0.0f,0.0f,
+		1.0f,0.0f,0.0f,
+		1.0f,0.0f,0.0f,
 
 		0.0f,0.0f,-1.0f,
 		0.0f,0.0f,-1.0f,
@@ -394,12 +391,18 @@ void initialize() {
 		-1.0f,0.0f,0.0f,
 		-1.0f,0.0f,0.0f,
 
-		1.0f,0.0f,0.0f,
-		1.0f,0.0f,0.0f,
-		1.0f,0.0f,0.0f,
-		1.0f,0.0f,0.0f,
+		0.0f,1.0f,0.0f,
+		0.0f,1.0f,0.0f,
+		0.0f,1.0f,0.0f,
+		0.0f,1.0f,0.0f,
+
+		0.0f,-1.0f,0.0f,
+		0.0f,-1.0f,0.0f,
+		0.0f,-1.0f,0.0f,
+		0.0f,-1.0f,0.0f,
 
 	};
+
 	glGenVertexArrays(1, &gVao_cube);
 	glBindVertexArray(gVao_cube);
 	//set square position
@@ -430,7 +433,7 @@ void initialize() {
 	glDepthFunc(GL_LEQUAL);
 	
 	// We will always cull back faces for better performance
-	//glEnable(GL_CULL_FACE);
+	glEnable(GL_CULL_FACE);
 
 	// set background color to which it will display even if it will empty. THIS LINE CAN BE IN drawRect().
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f); // black
@@ -461,7 +464,7 @@ void display() {
 		glUniform1i(gLKeyPressedUniform, 1);
 		glUniform3f(gLdUniform, 1.0f, 1.0f, 1.0f);
 		glUniform3f(gKdUniform, 0.5f, 0.5f, 0.5f);
-		float lightPosition[] = { 0.0f, 2.0f, 2.0f, 1.0f };
+		float lightPosition[] = { 0.0f, 0.0f, 2.0f, 1.0f };
 		glUniform4fv(gLightPositionUniform, 1, (GLfloat*)lightPosition);
 	}
 	else {
@@ -473,17 +476,18 @@ void display() {
 										//set modleview and projection matrices to identity matrix
 
 	mat4 modelMatrix = mat4::identity();
-	mat4 modelViewMatrix = mat4::identity();
+	mat4 viewMatrix = mat4::identity();
 	mat4 rotationMatrix = mat4::identity();
 
 	modelMatrix = vmath::translate(0.0f, 0.0f, -6.0f);
 	rotationMatrix = vmath::rotate(gAngle, gAngle, gAngle); //arbitory all axes rotation
 
-	modelViewMatrix = modelMatrix * rotationMatrix;
+	modelMatrix = modelMatrix * rotationMatrix;
 	
    // Pass above matrices to shaders
 
-	glUniformMatrix4fv(gModelViewMatrixUniform, 1, GL_FALSE, modelViewMatrix);
+	glUniformMatrix4fv(gModelMatrixUniform, 1, GL_FALSE, modelMatrix);
+	glUniformMatrix4fv(gViewMatrixUniform, 1, GL_FALSE, viewMatrix);
 	glUniformMatrix4fv(gProjectionMatrixUniform, 1, GL_FALSE, gPerspectiveProjectionMatrix);
 
 	//bind cube vao
