@@ -25,6 +25,7 @@ import java.nio.ShortBuffer;
 
 public class GLESView extends GLSurfaceView implements GLSurfaceView.Renderer, OnGestureListener, OnDoubleTapListener
 {
+	static final float RADIUS = 500.0f;
 	private final Context context;
 	private GestureDetector gestureDetector;
 	
@@ -60,18 +61,13 @@ public class GLESView extends GLSurfaceView implements GLSurfaceView.Renderer, O
 	//Blue color light(light2)
 	private float light2Diffuse[] = { 0.0f,0.0f,1.0f,0.0f };
 	private float light2Specular[] = { 0.0f, 0.0f, 1.0f, 0.0f };
-	private float light2Position[] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
 	private float material_ambient[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	private float material_diffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	private float material_specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 	private float material_shininess = 50.0f;
 	private int gModelMatrixUniform, gViewMatrixUniform, gProjectionMatrixUniform;
-	private int gModelLight0MatrixUniform; //light0
-	private int gViewLight0MatrixUniform;
-	private int gModelLight1MatrixUniform; //light1
-	private int gModelLight2MatrixUniform; //light2
-	private int gLightPositionUniform, gLight2PositionUniform;
+	private int gLight0PositionUniform, gLight1PositionUniform, gLight2PositionUniform;
 	private int gSingleTapUniform;
 	private int La_uniform, L0d_uniform, L0s_uniform, L1d_uniform, L1s_uniform, L2d_uniform, L2s_uniform;
 	private int Ka_uniform, Kd_uniform, Ks_uniform;
@@ -187,12 +183,9 @@ public class GLESView extends GLSurfaceView implements GLSurfaceView.Renderer, O
 		"in vec3 vNormal;" +
 		"uniform mat4 u_model_matrix;" +
 		"uniform mat4 u_view_matrix;" +
-		"uniform mat4 u_view_light0_matrix;" +
 		"uniform mat4 u_projection_matrix;" +
-		"uniform mat4 u_model_light0_matrix;" +
-		"uniform mat4 u_model_light1_matrix;" +
-		"uniform mat4 u_model_light2_matrix;" +
-		"uniform vec4 u_light_position;" +
+		"uniform vec4 u_light0_position;" +
+		"uniform vec4 u_light1_position;" +
 		"uniform vec4 u_light2_position;" +
 		"uniform int u_lighting_enabled;" +
 		"out vec3 transformed_normals_light0;" +
@@ -209,18 +202,18 @@ public class GLESView extends GLSurfaceView implements GLSurfaceView.Renderer, O
 		"if(u_lighting_enabled == 1)" +
 		"{" +
 		"        /*light0 calculations  */       " +
-		"vec4 eye_coordinates_light0 = u_view_light0_matrix * u_model_light0_matrix * vPosition;" +
-		"transformed_normals_light0 = mat3(u_view_light0_matrix * u_model_light0_matrix) * vNormal;" +
-		"light_direction_light0 = vec3(u_light_position) - eye_coordinates_light0.xyz;" +
+		"vec4 eye_coordinates_light0 = u_view_matrix * u_model_matrix * vPosition;" +
+		"transformed_normals_light0 = mat3(u_view_matrix * u_model_matrix) * vNormal;" +
+		"light_direction_light0 = vec3(u_light0_position) - eye_coordinates_light0.xyz;" +
 		"viewer_vector_light0 = -eye_coordinates_light0.xyz;" +		
 		"        /*light1 calculations  */       " +
-		"vec4 eye_coordinates_light1 = u_view_matrix * u_model_light1_matrix * vPosition;" +
-		"transformed_normals_light1 = mat3(u_view_matrix * u_model_light1_matrix) * vNormal;" +
-		"light_direction_light1 = vec3(u_light_position) - eye_coordinates_light1.xyz;" +
+		"vec4 eye_coordinates_light1 = u_view_matrix * u_model_matrix * vPosition;" +
+		"transformed_normals_light1 = mat3(u_view_matrix * u_model_matrix) * vNormal;" +
+		"light_direction_light1 = vec3(u_light1_position) - eye_coordinates_light1.xyz;" +
 		"viewer_vector_light1 = -eye_coordinates_light1.xyz;" +
 		"        /*light2 calculations  */       " +
-		"vec4 eye_coordinates_light2 = u_view_matrix * u_model_light2_matrix * vPosition;" +
-		"transformed_normals_light2 = mat3(u_view_matrix * u_model_light2_matrix) * vNormal;" +
+		"vec4 eye_coordinates_light2 = u_view_matrix * u_model_matrix * vPosition;" +
+		"transformed_normals_light2 = mat3(u_view_matrix * u_model_matrix) * vNormal;" +
 		"light_direction_light2 = vec3(u_light2_position) - eye_coordinates_light2.xyz;" +
 		"viewer_vector_light2 = -eye_coordinates_light2.xyz;" +
 		"}" +
@@ -376,24 +369,20 @@ public class GLESView extends GLSurfaceView implements GLSurfaceView.Renderer, O
 
 		//light animation
 		//light 0 details
-		gModelLight0MatrixUniform = GLES30.glGetUniformLocation(shaderProgramObject, "u_model_light0_matrix");
-		gViewLight0MatrixUniform = GLES30.glGetUniformLocation(shaderProgramObject, "u_view_light0_matrix");
 		
 		L0d_uniform = GLES30.glGetUniformLocation(shaderProgramObject, "u_L0d");
 		L0s_uniform = GLES30.glGetUniformLocation(shaderProgramObject, "u_L0s");
 		//light1 details
-		gModelLight1MatrixUniform = GLES30.glGetUniformLocation(shaderProgramObject, "u_model_light1_matrix");
 		L1d_uniform = GLES30.glGetUniformLocation(shaderProgramObject, "u_L1d");
 		L1s_uniform = GLES30.glGetUniformLocation(shaderProgramObject, "u_L1s");
 
 		//ligh2 details
-		gModelLight2MatrixUniform = GLES30.glGetUniformLocation(shaderProgramObject, "u_model_light2_matrix");
 		L2d_uniform = GLES30.glGetUniformLocation(shaderProgramObject, "u_L2d");
 		L2s_uniform = GLES30.glGetUniformLocation(shaderProgramObject, "u_L2s");
+
+		gLight0PositionUniform = GLES30.glGetUniformLocation(shaderProgramObject, "u_light0_position");
+		gLight1PositionUniform = GLES30.glGetUniformLocation(shaderProgramObject, "u_light1_position");
 		gLight2PositionUniform = GLES30.glGetUniformLocation(shaderProgramObject, "u_light2_position");
-
-		gLightPositionUniform = GLES30.glGetUniformLocation(shaderProgramObject, "u_light_position");
-
 		//DATA: vertices, colors, shader attribs, vao, vbos initialization
 		
 		Sphere sphere=new Sphere();
@@ -513,8 +502,25 @@ public class GLESView extends GLSurfaceView implements GLSurfaceView.Renderer, O
 			GLES30.glUniform3fv(L2d_uniform, 1, light2Diffuse, 0);
 			GLES30.glUniform3fv(L2s_uniform, 1, light2Specular, 0);
 			//specify unique light position to all lights
-			GLES30.glUniform4fv(gLightPositionUniform, 1, lightPosition, 0);
-
+			float lightPositionLocal[] = {0.0f, 0.0f, 0.0f, 1.0f };
+			//light0
+			lightPosition[0] = RADIUS * (float)Math.cos(angle);
+			lightPosition[2] = RADIUS * (float)Math.sin(angle);
+			GLES30.glUniform4fv(gLight0PositionUniform, 1, lightPosition, 0);
+			lightPosition[0] = 0.0f;
+			lightPosition[2] = 0.0f;
+			//light1
+			lightPosition[1] = RADIUS * (float)Math.cos(angle);
+			lightPosition[2] = RADIUS * (float)Math.sin(angle);
+			GLES30.glUniform4fv(gLight1PositionUniform, 1, lightPosition, 0);
+			lightPosition[1] = 0.0f;
+			lightPosition[2] = 0.0f;
+			//light2
+			lightPosition[0] = RADIUS * (float)Math.cos(angle);
+			lightPosition[1] = RADIUS * (float)Math.sin(angle);
+			GLES30.glUniform4fv(gLight2PositionUniform, 1, lightPosition, 0);
+			lightPosition[0] = 0.0f;
+			lightPosition[1] = 0.0f;
 			//set material properties
 			GLES30.glUniform3fv(Ka_uniform, 1, material_ambient, 0);
 			GLES30.glUniform3fv(Kd_uniform, 1, material_diffuse, 0);
@@ -522,41 +528,6 @@ public class GLESView extends GLSurfaceView implements GLSurfaceView.Renderer, O
 			GLES30.glUniform1f(material_shininess_uniform, material_shininess);
 			
 			//light animation
-			float modelLightMatrix[] = new float[16];
-			Matrix.setIdentityM(modelLightMatrix, 0);
-
-			float viewLightMatrix[] =  new float[16];
-			Matrix.setIdentityM(viewLightMatrix, 0);
-			
-			float rotationLightMatrix[] = new float[16];
-			Matrix.setIdentityM(rotationLightMatrix, 0);
-			float rotationLight1Matrix[] = new float[16];
-			Matrix.setIdentityM(rotationLight1Matrix, 0);
-		
-			Matrix.translateM(modelLightMatrix, 0, 0.0f, 0.0f, zoomZ);
-			Matrix.rotateM(rotationLightMatrix, 0, angle , 1.0f, 0.0f, 0.0f);
-			Matrix.multiplyMM(modelLightMatrix, 0, modelLightMatrix, 0,rotationLightMatrix,0);
-			
-			GLES30.glUniformMatrix4fv(gModelLight0MatrixUniform, 1, false, modelLightMatrix, 0); //light0
-			GLES30.glUniformMatrix4fv(gViewLight0MatrixUniform, 1, false, viewLightMatrix, 0); //light0
-			
-			//light1
-			Matrix.setIdentityM(modelLightMatrix, 0);
-			Matrix.setIdentityM(rotationLightMatrix, 0);
-			Matrix.translateM(modelLightMatrix, 0, 0.0f, 0.0f, zoomZ);
-			Matrix.rotateM(rotationLightMatrix, 0, angle , 0.0f, 1.0f, 0.0f);
-			Matrix.multiplyMM(modelLightMatrix, 0, modelLightMatrix, 0,rotationLightMatrix,0);
-			GLES30.glUniformMatrix4fv(gModelLight1MatrixUniform, 1, false, modelLightMatrix, 0); //light1
-			
-			//light2
-			Matrix.setIdentityM(modelLightMatrix, 0);
-			Matrix.setIdentityM(rotationLightMatrix, 0);
-			Matrix.translateM(modelLightMatrix, 0, 0.0f, 0.0f, zoomZ);
-			Matrix.rotateM(rotationLightMatrix, 0, angle , 0.0f, 0.0f, 1.0f);
-			light2Position[0] = 360;
-			GLES30.glUniform4fv(gLight2PositionUniform, 1, light2Position , 0);
-			Matrix.multiplyMM(modelLightMatrix, 0, modelLightMatrix, 0,rotationLightMatrix,0);
-			GLES30.glUniformMatrix4fv(gModelLight2MatrixUniform, 1, false, modelLightMatrix, 0); //light2
 			
 			spin(); //change angle of rotation
 		}else{
@@ -607,7 +578,7 @@ public class GLESView extends GLSurfaceView implements GLSurfaceView.Renderer, O
 		requestRender();
 	}
 	void spin(){
-		angle =  angle + 0.5f;
+		angle =  angle + 0.05f;
 		if (angle >= 360.0f) {
 			angle = angle - 360.0f;
 		}
