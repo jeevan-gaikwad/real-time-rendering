@@ -616,7 +616,11 @@ void draw_spheres(GLint no_of_spheres, material_props_t material_properties[], i
 	//winHeight = 600;
 	GLint windowCenterX = winWidth / 2;
 	GLint windowCenterY = winHeight / 2;
-	GLint viewPortSizeX = winWidth / 8, viewPortSizeY = winHeight/8;
+	GLint viewPortSizeX = winWidth / 8; 
+	GLint viewPortSizeY = winHeight / 8;
+	GLfloat newAspectRatio = (float)viewPortSizeX / (float)viewPortSizeY;
+	//update perspective according to new aspect ratio
+	gPerspectiveProjectionMatrix = vmath::perspective(45.0f, newAspectRatio, 0.1f, 100.0f);
 	glViewport(windowCenterX, windowCenterY, viewPortSizeX, viewPortSizeY);
 
 	int y_trans = viewPortSizeX;
@@ -631,8 +635,6 @@ void draw_spheres(GLint no_of_spheres, material_props_t material_properties[], i
 
 		int local_y_trans = 0;
 		if (((i - 1) % 4) == 0 && (i - 1 != 0)) {
-			//local_y_trans = distanceBetSpheres;
-			//y_trans -= local_y_trans;
 			currentViewPortX = windowCenterX - x_trans*3;
 			currentViewPortY -= y_trans;
 			glViewport(currentViewPortX, currentViewPortY, viewPortSizeX, viewPortSizeY);
