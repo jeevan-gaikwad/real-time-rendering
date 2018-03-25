@@ -530,25 +530,16 @@ public class GLESView extends GLSurfaceView implements GLSurfaceView.Renderer, O
 
 	int windowCenterX = winWidth / 2;
 	int windowCenterY = winHeight / 2;
-	int viewPortSizeX = winWidth/6;
+	int viewPortSizeX = winWidth/4;
 	int viewPortSizeY = winHeight/6;
+	float newAspectRatio = (float)(viewPortSizeX)/(float)(viewPortSizeY);
 	float viewPortSizeAspectRatio = viewPortSizeX / viewPortSizeY;
-	float screenAspectRatio = winWidth/winHeight;
-	float scaleFactor;
-	/*
-	if( screenAspectRatio > viewPortSizeAspectRatio ){
-		scaleFactor = winHeight / viewPortSizeY;
-		viewPortSizeX = (int)(viewPortSizeX * scaleFactor);
-		viewPortSizeY = winHeight;
-	}
-	else{
-		scaleFactor = winWidth / viewPortSizeX;
-		viewPortSizeX = winHeight;
-		viewPortSizeY = (int) (viewPortSizeY * scaleFactor);
-	}
-	*/
+	
+	//update perspective according to new aspect ratio
+	Matrix.perspectiveM(perspectiveProjectionMatrix, 0, 45.0f,newAspectRatio,0.1f,100.0f);
+	
 	GLES30.glViewport(windowCenterX, windowCenterY, viewPortSizeX, viewPortSizeY);
-	//System.out.println("JCG: viewPortSizeX:"+viewPortSizeX+" viewPortSizeY:"+viewPortSizeY);
+	
 	int y_trans = viewPortSizeY;
 	int x_trans = viewPortSizeX;
 	int   distanceBetSpheres = 130;
@@ -563,8 +554,6 @@ public class GLESView extends GLSurfaceView implements GLSurfaceView.Renderer, O
 
 			int local_y_trans = 0;
 			if (((i - 1) % 4) == 0 && (i - 1 != 0)) {
-				//local_y_trans = distanceBetSpheres;
-				//y_trans -= y_trans;
 				currentViewPortY -= y_trans;
 				currentViewPortX = windowCenterX - x_trans*3; //reset X
 				GLES30.glViewport( currentViewPortX, currentViewPortY, viewPortSizeX, viewPortSizeY);
