@@ -1,0 +1,3 @@
+Program is started successfullyOpenGL version: 4.1 ATI-1.66.31
+GLSL version  : 4.10
+Fragment shader compilation success.Program terminated successfully.
