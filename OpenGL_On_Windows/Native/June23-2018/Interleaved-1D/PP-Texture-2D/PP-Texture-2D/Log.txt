@@ -1,0 +1,4 @@
+GLSL version is:4.50 - Build 23.20.16.4849
+texture loaded successfully
+Log file successfully created!
+Closing log file
